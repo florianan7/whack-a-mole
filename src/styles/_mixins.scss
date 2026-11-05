@@ -1,0 +1,30 @@
+@use 'tokens' as *;
+
+// Visible focus ring for keyboard users
+@mixin focus-ring($color: var(--color-text), $offset: 2px) {
+    &:focus-visible {
+        outline: 3px solid $color;
+        outline-offset: $offset;
+    }
+}
+
+// "Card": surface background, rounded corners and shadow
+@mixin surface($radius: $radius) {
+    background: var(--color-surface);
+    border-radius: $radius;
+    box-shadow: $shadow;
+}
+
+// Hides an element visually but keeps it accessible (keyboard and screen readers)
+@mixin visually-hidden {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+// Touch-friendly buttons: no 300 ms tap delay and no grey tap highlight
+@mixin touchable {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}

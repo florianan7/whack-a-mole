@@ -1,0 +1,48 @@
+@use '../../styles/tokens' as *;
+@use '../../styles/mixins' as *;
+
+.difficulty {
+    @include surface;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin: 0;
+    padding: 4px;
+    border: none;
+
+    &__legend {
+        float: left;
+        grid-column: 1 / -1;
+        padding: 4px 8px;
+        font-weight: 600;
+    }
+
+    &__option {
+        display: grid;
+        place-items: center;
+        min-height: 44px;
+        font-weight: 600;
+        border-radius: $radius - 4px;
+        cursor: pointer;
+
+        &:has(.difficulty__input:checked) {
+            color: var(--color-on-primary);
+            background: var(--color-primary);
+        }
+
+        &:has(.difficulty__input:focus-visible) {
+            outline: 3px solid var(--color-text);
+            outline-offset: 2px;
+        }
+    }
+
+    &__input {
+        @include visually-hidden;
+    }
+
+    &:disabled &__option {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+}

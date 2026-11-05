@@ -1,0 +1,36 @@
+@use 'tokens' as *;
+@use 'mixins' as *;
+
+.button {
+    @include touchable;
+    @include focus-ring;
+
+    min-height: $touch-target;
+    padding: 12px 24px;
+    font: inherit;
+    font-weight: 700;
+    color: var(--color-on-primary);
+    background: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    border-radius: $radius;
+
+    &:hover:not(:disabled) {
+        background: var(--color-primary-hover);
+        border-color: var(--color-primary-hover);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    // Secondary variant: same size, outlined (e.g. "change player")
+    &--secondary {
+        color: var(--color-primary);
+        background: transparent;
+
+        &:hover:not(:disabled) {
+            color: var(--color-on-primary);
+        }
+    }
+}

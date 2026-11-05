@@ -1,0 +1,44 @@
+@use '../../styles/mixins' as *;
+
+$max-width: 420px;
+
+.board {
+    display: grid;
+    // --columns is set by Board.tsx from the number of holes; 3 as a fallback
+    grid-template-columns: repeat(var(--columns, 3), 1fr);
+    gap: clamp(8px, 3vw, 16px);
+    // Fits the phone width and, in landscape, the screen height
+    width: min(100%, #{$max-width}, 60dvh);
+    margin: 0 auto;
+}
+
+.hole {
+    @include touchable;
+    @include focus-ring($color: var(--color-primary), $offset: 3px);
+
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    overflow: hidden;
+    padding: 0;
+    font-size: clamp(2rem, 12vw, 3.5rem);
+    background: radial-gradient(circle at 50% 60%, var(--color-hole-inner) 45%, var(--color-hole) 70%);
+    border: none;
+    border-radius: 50%;
+    box-shadow: inset 0 6px 12px rgb(0 0 0 / 0.4);
+
+    &__mole {
+        animation: pop-up 150ms ease-out;
+    }
+}
+
+@keyframes pop-up {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
