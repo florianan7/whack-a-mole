@@ -24,7 +24,7 @@ describe('useMole', () => {
         expect(result.current.molePosition).toBe(0)
 
         act(() => vi.advanceTimersByTime(1000))
-        expect(result.current.molePosition).toBe(1)   // never the same hole twice
+        expect(result.current.molePosition).toBe(1) // never the same hole twice
     })
 
     it('respeta la velocidad de la dificultad', () => {
@@ -59,10 +59,9 @@ describe('useMole', () => {
     })
 
     it('esconde el topo y para el intervalo al dejar de jugar', () => {
-        const {result, rerender} = renderHook(
-            ({isPlaying}) => useMole(isPlaying, 1000, 9),
-            {initialProps: {isPlaying: true}},
-        )
+        const {result, rerender} = renderHook(({isPlaying}) => useMole(isPlaying, 1000, 9), {
+            initialProps: {isPlaying: true},
+        })
         act(() => vi.advanceTimersByTime(1000))
 
         rerender({isPlaying: false})

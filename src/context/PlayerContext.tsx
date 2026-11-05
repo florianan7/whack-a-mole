@@ -43,7 +43,7 @@ function storeName(name: string): void {
  * Holds the current player and keeps it in sync with localStorage,
  * so the name survives reloads and offline reopenings (PWA).
  */
-export function PlayerProvider({children}: { children: ReactNode }) {
+export function PlayerProvider({children}: {children: ReactNode}) {
     // Lazy initializer: localStorage is read once, on mount, not on every render.
     const [name, setName] = useState(readStoredName)
 
@@ -51,11 +51,7 @@ export function PlayerProvider({children}: { children: ReactNode }) {
         storeName(name)
     }, [name])
 
-    return (
-        <PlayerContext.Provider value={{name, setName}}>
-            {children}
-        </PlayerContext.Provider>
-    )
+    return <PlayerContext.Provider value={{name, setName}}>{children}</PlayerContext.Provider>
 }
 
 /**

@@ -26,7 +26,7 @@ function GamePage() {
 
     // Route guard: no player registered → back to home.
     if (!name) {
-        return <Navigate to="/" replace/>
+        return <Navigate to="/" replace />
     }
 
     /** Adds the difficulty points (and vibrates, where supported) when a mole is hit. */
@@ -54,25 +54,19 @@ function GamePage() {
         <main className="page">
             <header className="game-header">
                 <h1 className="game-header__name">{name}</h1>
-                <p className="score" aria-live="polite">Puntos: {score}</p>
+                <p className="score" aria-live="polite">
+                    Puntos: {score}
+                </p>
             </header>
 
-            <DifficultySelector
-                value={difficulty}
-                onChange={setDifficulty}
-                disabled={isPlaying}
-            />
+            <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isPlaying} />
 
             <button className="button" type="button" onClick={handlePlayClick}>
                 {isPlaying ? 'Parar' : 'Play'}
             </button>
 
             {isPlaying && (
-                <Board
-                    totalHoles={TOTAL_HOLES}
-                    molePosition={molePosition}
-                    onWhack={handleWhack}
-                />
+                <Board totalHoles={TOTAL_HOLES} molePosition={molePosition} onWhack={handleWhack} />
             )}
 
             <button

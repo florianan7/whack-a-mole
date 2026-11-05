@@ -6,7 +6,7 @@ import {renderWithProviders} from '../test-utils/renderWithProviders'
 
 describe('HomePage', () => {
     it('muestra el campo de nombre y el botón de jugar', () => {
-        renderWithProviders(<App/>)
+        renderWithProviders(<App />)
 
         expect(screen.getByLabelText('Nombre')).toBeInTheDocument()
         expect(screen.getByRole('button', {name: 'Jugar'})).toBeInTheDocument()
@@ -14,7 +14,7 @@ describe('HomePage', () => {
 
     it('muestra un error si el nombre está vacío', async () => {
         const user = userEvent.setup()
-        renderWithProviders(<App/>)
+        renderWithProviders(<App />)
 
         await user.click(screen.getByRole('button', {name: 'Jugar'}))
 
@@ -24,7 +24,7 @@ describe('HomePage', () => {
 
     it('no acepta un nombre de solo espacios', async () => {
         const user = userEvent.setup()
-        renderWithProviders(<App/>)
+        renderWithProviders(<App />)
 
         await user.type(screen.getByLabelText('Nombre'), '     ')
         await user.click(screen.getByRole('button', {name: 'Jugar'}))
@@ -34,7 +34,7 @@ describe('HomePage', () => {
 
     it('muestra un error si el nombre tiene símbolos', async () => {
         const user = userEvent.setup()
-        renderWithProviders(<App/>)
+        renderWithProviders(<App />)
 
         await user.type(screen.getByLabelText('Nombre'), 'Ana!')
         await user.click(screen.getByRole('button', {name: 'Jugar'}))
@@ -44,7 +44,7 @@ describe('HomePage', () => {
 
     it('borra el error al volver a escribir', async () => {
         const user = userEvent.setup()
-        renderWithProviders(<App/>)
+        renderWithProviders(<App />)
 
         await user.click(screen.getByRole('button', {name: 'Jugar'}))
         await user.type(screen.getByLabelText('Nombre'), 'A')
@@ -54,7 +54,7 @@ describe('HomePage', () => {
 
     it('con un nombre válido (con tildes) va a la vista de juego', async () => {
         const user = userEvent.setup()
-        renderWithProviders(<App/>)
+        renderWithProviders(<App />)
 
         await user.type(screen.getByLabelText('Nombre'), '  Iñaki  ')
         await user.keyboard('{Enter}')

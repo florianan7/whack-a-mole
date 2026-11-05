@@ -5,13 +5,13 @@ import {renderWithProviders} from '../test-utils/renderWithProviders'
 
 function renderGameAs(name: string) {
     localStorage.setItem('whack-a-mole:player', name)
-    return renderWithProviders(<App/>, {route: '/game'})
+    return renderWithProviders(<App />, {route: '/game'})
 }
 
 describe('GamePage', () => {
     beforeEach(() => {
         vi.useFakeTimers()
-        vi.spyOn(Math, 'random').mockReturnValue(0)   // the first mole always shows up in hole 1
+        vi.spyOn(Math, 'random').mockReturnValue(0) // the first mole always shows up in hole 1
     })
 
     // With fake timers we use fireEvent (synchronous): userEvent waits on real timers and hangs
@@ -38,16 +38,19 @@ describe('GamePage', () => {
         {level: 'Bajo', intervalMs: 1000, points: 10},
         {level: 'Medio', intervalMs: 750, points: 20},
         {level: 'Alto', intervalMs: 500, points: 30},
-    ])('en nivel $level el topo sale cada $intervalMs ms y da $points puntos', ({level, intervalMs, points}) => {
-        renderGameAs('Ana')
+    ])(
+        'en nivel $level el topo sale cada $intervalMs ms y da $points puntos',
+        ({level, intervalMs, points}) => {
+            renderGameAs('Ana')
 
-        fireEvent.click(screen.getByRole('radio', {name: level}))
-        fireEvent.click(screen.getByRole('button', {name: 'Play'}))
-        act(() => vi.advanceTimersByTime(intervalMs))
-        fireEvent.click(screen.getByRole('button', {name: /¡topo!/}))
+            fireEvent.click(screen.getByRole('radio', {name: level}))
+            fireEvent.click(screen.getByRole('button', {name: 'Play'}))
+            act(() => vi.advanceTimersByTime(intervalMs))
+            fireEvent.click(screen.getByRole('button', {name: /¡topo!/}))
 
-        expect(screen.getByText(`Puntos: ${points}`)).toBeInTheDocument()
-    })
+            expect(screen.getByText(`Puntos: ${points}`)).toBeInTheDocument()
+        },
+    )
 
     it('no suma puntos al pulsar una casilla vacía', () => {
         renderGameAs('Ana')

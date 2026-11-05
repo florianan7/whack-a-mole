@@ -52,7 +52,9 @@ function HomePage() {
             <h1 className="title">🐹 Toca al topo</h1>
             {/* noValidate: we show our own messages instead of the browser's native ones */}
             <form className="form" onSubmit={handleSubmit} noValidate>
-                <label className="label" htmlFor="player-name">Nombre</label>
+                <label className="label" htmlFor="player-name">
+                    Nombre
+                </label>
                 <input
                     className="input"
                     id="player-name"
@@ -66,8 +68,14 @@ function HomePage() {
                     aria-invalid={error !== ''}
                     aria-describedby={error ? 'player-name-error' : undefined}
                 />
-                {error && <p className="error" id="player-name-error" role="alert">{error}</p>}
-                <button className="button" type="submit">Jugar</button>
+                {error && (
+                    <p className="error" id="player-name-error" role="alert">
+                        {error}
+                    </p>
+                )}
+                <button className="button" type="submit">
+                    Jugar
+                </button>
             </form>
         </main>
     )
