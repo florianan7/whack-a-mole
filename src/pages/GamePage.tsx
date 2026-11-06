@@ -3,33 +3,27 @@ import {Navigate} from 'react-router-dom'
 import {usePlayer} from '../context/PlayerContext'
 import DifficultySelector from '../components/DifficultySelector'
 import Board from '../components/Board'
-import {useMole} from '../hooks/useMole'
+import {useMoles} from '../hooks/useMoles'
 import {DEFAULT_DIFFICULTY, DIFFICULTIES, type Difficulty} from '../game/difficulty'
 
 const TOTAL_HOLES = 9
 const HIT_VIBRATION_MS = 50
 
-/**
- * Game view: player name, score, difficulty selector, Play/Stop button and the board.
- * Owns the game state (score, difficulty, playing) and delegates the mole
- * logic to the useMole hook.
- */
+/** Vista de juego: jugador, puntos, dificultad, botón Play/Parar y tablero. */
 function GamePage() {
     const {name, setName} = usePlayer()
     const [score, setScore] = useState(0)
     const [difficulty, setDifficulty] = useState<Difficulty>(DEFAULT_DIFFICULTY)
     const [isPlaying, setIsPlaying] = useState(false)
 
-    const {intervalMs, points} = DIFFICULTIES[difficulty]
-    // Hooks must run before any early return (rules of hooks).
-    const {molePosition, whack} = useMole(isPlaying, intervalMs, TOTAL_HOLES)
+    const {intervalMs, points, moles} = DIFFICULTIES[difficulty]
+    const {molePositions, whack} = useMoles(isPlaying, intervalMs, TOTAL_HOLES, moles)
 
-    // Route guard: no player registered → back to home.
     if (!name) {
         return <Navigate to="/" replace />
     }
 
-    /** Adds the difficulty points (and vibrates, where supported) when a mole is hit. */
+    /** Suma los puntos si en la casilla había un topo. */
     function handleWhack(index: number) {
         if (whack(index)) {
             setScore((previous) => previous + points)
@@ -37,7 +31,7 @@ function GamePage() {
         }
     }
 
-    /** Toggles the game. Each new game starts from 0 points. */
+    /** Empieza una partida nueva desde 0 puntos, o para la actual. */
     function handlePlayClick() {
         if (!isPlaying) {
             setScore(0)
@@ -45,7 +39,7 @@ function GamePage() {
         setIsPlaying((previous) => !previous)
     }
 
-    /** Forgets the player; the route guard above then redirects to home. */
+    /** Olvida al jugador y vuelve a home. */
     function handleChangePlayer() {
         setName('')
     }
@@ -66,7 +60,11 @@ function GamePage() {
             </button>
 
             {isPlaying && (
-                <Board totalHoles={TOTAL_HOLES} molePosition={molePosition} onWhack={handleWhack} />
+                <Board
+                    totalHoles={TOTAL_HOLES}
+                    molePositions={molePositions}
+                    onWhack={handleWhack}
+                />
             )}
 
             <button

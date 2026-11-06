@@ -4,15 +4,12 @@ import './Board.scss'
 
 interface BoardProps {
     totalHoles: number
-    molePosition: number | null
+    molePositions: ReadonlySet<number>
     onWhack: (index: number) => void
 }
 
-/**
- * Presentational grid of holes. Holds no state: it renders the mole where
- * `molePosition` says and forwards clicks to the parent through `onWhack`.
- */
-function Board({totalHoles, molePosition, onWhack}: BoardProps) {
+/** Tablero cuadrado de casillas con un topo en cada una de las `molePositions`. */
+function Board({totalHoles, molePositions, onWhack}: BoardProps) {
     const holes = Array.from({length: totalHoles}, (_, index) => index)
     const columns = Math.ceil(Math.sqrt(totalHoles))
 
@@ -27,7 +24,7 @@ function Board({totalHoles, molePosition, onWhack}: BoardProps) {
                 <Hole
                     key={index}
                     index={index}
-                    hasMole={index === molePosition}
+                    hasMole={molePositions.has(index)}
                     onWhack={onWhack}
                 />
             ))}

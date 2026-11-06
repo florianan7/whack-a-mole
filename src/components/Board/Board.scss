@@ -4,10 +4,8 @@ $max-width: 420px;
 
 .board {
     display: grid;
-    // --columns is set by Board.tsx from the number of holes; 3 as a fallback
     grid-template-columns: repeat(var(--columns, 3), 1fr);
     gap: clamp(8px, 3vw, 16px);
-    // Fits the phone width and, in landscape, the screen height
     width: min(100%, #{$max-width}, 60dvh);
     margin: 0 auto;
 }
