@@ -1,44 +1,73 @@
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {Navigate} from 'react-router-dom'
 import {usePlayer} from '../context/PlayerContext'
 import DifficultySelector from '../components/DifficultySelector'
 import Board from '../components/Board'
 import HapticSwitch from '../components/HapticSwitch'
-import {useMoles} from '../hooks/useMoles'
+import {useTargets} from '../hooks/useTargets'
 import {DEFAULT_DIFFICULTY, DIFFICULTIES, type Difficulty} from '../game/difficulty'
+import {GAME_DURATION_S, INITIAL_LIVES, TOTAL_HOLES} from '../game/rules'
+import {playSound} from '../game/sound'
 import {vibrate} from '../game/vibrate'
 
-const TOTAL_HOLES = 9
 const HIT_VIBRATION_MS = 50
+const BOMB_VIBRATION_MS = 300
 
-/** Vista de juego: jugador, puntos, dificultad, botón Play/Parar y tablero. */
+/** Vista de juego: jugador, vidas, tiempo, puntos, dificultad y tablero. */
 function GamePage() {
     const {name, setName} = usePlayer()
     const [score, setScore] = useState(0)
+    const [lives, setLives] = useState(INITIAL_LIVES)
+    const [timeLeft, setTimeLeft] = useState(GAME_DURATION_S)
     const [difficulty, setDifficulty] = useState<Difficulty>(DEFAULT_DIFFICULTY)
     const [isPlaying, setIsPlaying] = useState(false)
 
+    const isOver = !lives || !timeLeft
+    const isRunning = isPlaying && !isOver
     const {intervalMs, points, moles} = DIFFICULTIES[difficulty]
-    const {molePositions, whack} = useMoles(isPlaying, intervalMs, TOTAL_HOLES, moles)
+    const {targets, whack} = useTargets(isRunning, intervalMs, TOTAL_HOLES, moles)
+
+    /** Descuenta un segundo mientras dura la partida. */
+    useEffect(() => {
+        if (!isRunning) {
+            return
+        }
+        const intervalId = setInterval(() => setTimeLeft((seconds) => seconds - 1), 1000)
+        return () => clearInterval(intervalId)
+    }, [isRunning])
 
     if (!name) {
         return <Navigate to="/" replace />
     }
 
-    /** Suma los puntos si en la casilla había un topo. */
-    function handleWhack(index: number) {
-        if (whack(index)) {
+    /** Suma puntos por un topo o resta una vida por una bomba, y devuelve el texto a mostrar. */
+    function handleWhack(index: number): string | null {
+        const target = whack(index)
+        if (target === 'mole') {
             setScore((previous) => previous + points)
+            playSound('hit')
             vibrate(HIT_VIBRATION_MS)
+            return `+${points}`
         }
+        if (target === 'bomb') {
+            setLives((previous) => previous - 1)
+            playSound('bomb')
+            vibrate(BOMB_VIBRATION_MS)
+            return '-1 ❤️'
+        }
+        return null
     }
 
-    /** Empieza una partida nueva desde 0 puntos, o para la actual. */
+    /** Empieza una partida nueva, o para la actual. */
     function handlePlayClick() {
-        if (!isPlaying) {
-            setScore(0)
+        if (isRunning) {
+            setIsPlaying(false)
+            return
         }
-        setIsPlaying((previous) => !previous)
+        setScore(0)
+        setLives(INITIAL_LIVES)
+        setTimeLeft(GAME_DURATION_S)
+        setIsPlaying(true)
     }
 
     /** Olvida al jugador y vuelve a home. */
@@ -50,30 +79,39 @@ function GamePage() {
         <main className="page">
             <header className="game-header">
                 <h1 className="game-header__name">{name}</h1>
-                <p className="score" aria-live="polite">
-                    Puntos: {score}
-                </p>
+                <ul className="stats">
+                    <li className="stat" aria-label={`Vidas: ${lives}`}>
+                        {'❤️'.repeat(lives) + '🖤'.repeat(INITIAL_LIVES - lives)}
+                    </li>
+                    <li className="stat">⏱ {timeLeft} s</li>
+                    <li className="stat" aria-live="polite">
+                        Puntos: {score}
+                    </li>
+                </ul>
             </header>
 
-            <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isPlaying} />
+            <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isRunning} />
 
             <button className="button" type="button" onClick={handlePlayClick}>
-                {isPlaying ? 'Parar' : 'Play'}
+                {isRunning ? 'Parar' : 'Play'}
             </button>
 
-            {isPlaying && (
-                <Board
-                    totalHoles={TOTAL_HOLES}
-                    molePositions={molePositions}
-                    onWhack={handleWhack}
-                />
+            {isRunning && (
+                <Board totalHoles={TOTAL_HOLES} targets={targets} onWhack={handleWhack} />
+            )}
+
+            {isPlaying && isOver && (
+                <p className="game-over" role="status">
+                    {lives ? 'Se acabó el tiempo' : 'Te has quedado sin vidas'}. Has conseguido{' '}
+                    {score} puntos.
+                </p>
             )}
 
             <button
                 className="button button--secondary"
                 type="button"
                 onClick={handleChangePlayer}
-                disabled={isPlaying}
+                disabled={isRunning}
             >
                 Cambiar jugador
             </button>
