@@ -1,5 +1,7 @@
 # 🐹 Toca al topo
 
+[![CI](https://github.com/florianan7/whack-a-mole/actions/workflows/ci.yml/badge.svg)](https://github.com/florianan7/whack-a-mole/actions/workflows/ci.yml)
+
 Aplicación web progresiva (PWA) del clásico juego "Toca al topo", desarrollada con React, TypeScript y Vite. Funciona sin conexión y se puede instalar en el móvil.
 
 **Demo:** https://whack-a-mole-sigma-one.vercel.app
@@ -97,13 +99,13 @@ npm run test:e2e
 
 ## Decisiones de diseño
 
-- **Validación del nombre**: entre 2 y 15 caracteres tras eliminar espacios sobrantes; solo letras (de cualquier alfabeto, incluidas tildes y ñ), números y espacios. Un carácter no permitido se avisa al momento; la longitud se comprueba medio segundo después de dejar de escribir (_debounce_) y al enviar. Los errores se anuncian con `role="alert"` y se asocian al campo con `aria-describedby`.
+- **Validación del nombre**: entre 2 y 15 caracteres tras eliminar espacios sobrantes; solo letras (de cualquier alfabeto, incluidas tildes y ñ), números y espacios. Un carácter no permitido se avisa al momento; la longitud se comprueba medio segundo después de dejar de escribir (_debounce_). El botón **Jugar** permanece deshabilitado hasta que el nombre es válido. Los errores se anuncian con `role="alert"` y se asocian al campo con `aria-describedby`.
 - **Duración de la partida**: 60 segundos con cuenta atrás visible, o hasta perder las 3 vidas. El botón **Parar** permite abandonar antes. Cada partida empieza con 0 puntos, 3 vidas y el tiempo completo. Estas reglas viven en `src/game/rules.ts`.
 - **Bombas**: cada figura que aparece es una bomba con un 20 % de probabilidad (`BOMB_CHANCE`) en lugar de un topo. Golpearla resta una vida; ignorarla no tiene coste. En el nivel Bajo, con una sola figura, a veces solo hay una bomba y toca esperar.
 - **Los topos nunca repiten casilla**: `getRandomHoles` elige las casillas nuevas entre las que estaban libres, sacando una al azar y retirándola de la lista antes de sacar la siguiente, sin bucles de reintento. La función aleatoria se inyecta para que los tests sean deterministas.
 - **Persistencia**: el nombre del jugador se guarda en `localStorage`, de modo que sobrevive a recargas y a abrir la app sin conexión. Si el almacenamiento no está disponible (modo privado), la app sigue funcionando en memoria.
 - **Estado**: `PlayerContext` comparte el jugador entre vistas; el resto del estado vive en `GamePage` (puntos, vidas, tiempo, dificultad) y la lógica de las figuras en el hook `useTargets`, que limpia el intervalo al parar o al cambiar de nivel. Las figuras se guardan en un `Map` inmutable (casilla → topo o bomba): cada cambio crea uno nuevo para que React detecte la actualización. El fin de partida se deriva del estado (`!lives || !timeLeft`) en lugar de guardarse aparte.
-- **Componentes de presentación**: `Board`, `Hole` y `DifficultySelector` no tienen estado propio; reciben todo por props y notifican mediante callbacks.
+- **Componentes de presentación**: `Board`, `Hole` y `DifficultySelector` reciben todo por props y notifican mediante callbacks. El único estado que guardan es visual: el aviso flotante de `Hole`, que nadie más necesita.
 - **Estilos**: Sass con tokens de diseño (`src/styles/_tokens.scss`), diseño _mobile-first_, modo oscuro automático (`prefers-color-scheme`) y respeto a `prefers-reduced-motion`.
 - **Accesibilidad**: elementos nativos (`<button>`, `<fieldset>` con radios), nombres accesibles en cada casilla, foco visible, objetivos táctiles de 48 px y marcador con `aria-live`.
 
@@ -134,7 +136,8 @@ src/
 ├── components/        Componentes reutilizables (una carpeta por componente: .tsx, .scss, .test.tsx)
 │   ├── Board/
 │   ├── Hole/
-│   └── DifficultySelector/
+│   ├── DifficultySelector/
+│   └── HapticSwitch/
 ├── pages/             Una vista por ruta: HomePage, GamePage
 ├── hooks/             useTargets: lógica de topos y bombas
 ├── context/           PlayerContext: jugador compartido y persistido
