@@ -2,8 +2,7 @@
 
 .game-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
     gap: 12px;
 
     &__name {
@@ -15,11 +14,29 @@
     }
 }
 
-.score {
+.stats {
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.stat {
     @include surface($radius: 999px);
 
-    flex-shrink: 0;
-    margin: 0;
-    padding: 6px 14px;
+    flex: 1;
+    padding: 6px 12px;
     font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.game-over {
+    @include surface;
+
+    margin: 0;
+    padding: 16px;
+    font-weight: 700;
+    text-align: center;
 }

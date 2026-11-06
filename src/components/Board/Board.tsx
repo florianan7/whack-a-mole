@@ -1,15 +1,16 @@
 import type {CSSProperties} from 'react'
+import type {Target} from '../../game/targets'
 import Hole from '../Hole'
 import './Board.scss'
 
 interface BoardProps {
     totalHoles: number
-    molePositions: ReadonlySet<number>
-    onWhack: (index: number) => void
+    targets: ReadonlyMap<number, Target>
+    onWhack: (index: number) => string | null
 }
 
-/** Tablero cuadrado de casillas con un topo en cada una de las `molePositions`. */
-function Board({totalHoles, molePositions, onWhack}: BoardProps) {
+/** Tablero cuadrado de casillas con las figuras indicadas en `targets`. */
+function Board({totalHoles, targets, onWhack}: BoardProps) {
     const holes = Array.from({length: totalHoles}, (_, index) => index)
     const columns = Math.ceil(Math.sqrt(totalHoles))
 
@@ -24,7 +25,7 @@ function Board({totalHoles, molePositions, onWhack}: BoardProps) {
                 <Hole
                     key={index}
                     index={index}
-                    hasMole={molePositions.has(index)}
+                    target={targets.get(index) ?? null}
                     onWhack={onWhack}
                 />
             ))}
