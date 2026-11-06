@@ -7,7 +7,7 @@ Aplicación web progresiva (PWA) del clásico juego "Toca al topo", desarrollada
 ## Funcionamiento
 
 1. **Home** (`/`): el jugador introduce su nombre y pulsa **Jugar**. El nombre se valida antes de continuar.
-2. **Game** (`/game`): muestra el nombre, los puntos, el selector de dificultad y el botón **Play**. Al pulsarlo aparece un tablero de 9 casillas en el que los topos cambian de sitio aleatoriamente. Cada acierto suma los puntos del nivel elegido.
+2. **Game** (`/game`): muestra el nombre, las vidas, el tiempo restante, los puntos, el selector de dificultad y el botón **Play**. Al pulsarlo aparece un tablero de 9 casillas en el que los topos cambian de sitio aleatoriamente. Cada acierto suma los puntos del nivel elegido. La partida dura **60 segundos** y se juega con **3 vidas**: de vez en cuando sale una **bomba** en lugar de un topo y golpearla resta una vida. Termina al agotarse el tiempo o las vidas, y muestra la puntuación final.
 
 | Nivel | Cambio de posición | Puntos por acierto | Topos a la vez |
 | ----- | -----------------: | -----------------: | -------------: |
@@ -77,9 +77,9 @@ En un dispositivo real: abre la app desplegada una vez, activa el modo avión y 
 
 Los tests unitarios usan [Vitest](https://vitest.dev/) y [Testing Library](https://testing-library.com/), y viven junto al archivo que prueban (`*.test.ts(x)`). Cubren:
 
-- **Vistas**: `HomePage` (validación del nombre, navegación), `GamePage` (puntos por nivel, tablero, cambio de jugador, vibración) y las rutas de `App`.
+- **Vistas**: `HomePage` (validación del nombre, navegación), `GamePage` (puntos por nivel, tablero, bombas y vidas, cuenta atrás, fin de partida, cambio de jugador, vibración) y las rutas de `App`.
 - **Componentes**: `Board`, `Hole` y `DifficultySelector`.
-- **Lógica**: el hook `useMoles` (intervalos, limpieza, aciertos, varios topos) y la función pura `getRandomHoles`.
+- **Lógica**: el hook `useTargets` (intervalos, limpieza, aciertos, varias figuras) y las funciones puras `getRandomHoles`, `assignTargets` y `vibrate`.
 - **Contexto**: `PlayerContext` (persistencia en `localStorage`).
 
 Los tests buscan los elementos como lo haría un usuario (por rol y nombre accesible), de modo que también verifican la accesibilidad.
@@ -87,10 +87,11 @@ Los tests buscan los elementos como lo haría un usuario (por rol y nombre acces
 ## Decisiones de diseño
 
 - **Validación del nombre**: entre 2 y 15 caracteres tras eliminar espacios sobrantes; solo letras (de cualquier alfabeto, incluidas tildes y ñ), números y espacios. Un carácter no permitido se avisa al momento; la longitud se comprueba medio segundo después de dejar de escribir (_debounce_) y al enviar. Los errores se anuncian con `role="alert"` y se asocian al campo con `aria-describedby`.
-- **Duración de la partida**: el juego continúa hasta que el jugador pulsa **Parar**. Cada partida empieza con 0 puntos.
+- **Duración de la partida**: 60 segundos con cuenta atrás visible, o hasta perder las 3 vidas. El botón **Parar** permite abandonar antes. Cada partida empieza con 0 puntos, 3 vidas y el tiempo completo. Estas reglas viven en `src/game/rules.ts`.
+- **Bombas**: cada figura que aparece es una bomba con un 20 % de probabilidad (`BOMB_CHANCE`) en lugar de un topo. Golpearla resta una vida; ignorarla no tiene coste. En el nivel Bajo, con una sola figura, a veces solo hay una bomba y toca esperar.
 - **Los topos nunca repiten casilla**: `getRandomHoles` elige las casillas nuevas entre las que estaban libres, sacando una al azar y retirándola de la lista antes de sacar la siguiente, sin bucles de reintento. La función aleatoria se inyecta para que los tests sean deterministas.
 - **Persistencia**: el nombre del jugador se guarda en `localStorage`, de modo que sobrevive a recargas y a abrir la app sin conexión. Si el almacenamiento no está disponible (modo privado), la app sigue funcionando en memoria.
-- **Estado**: `PlayerContext` comparte el jugador entre vistas; el resto del estado vive en `GamePage` y la lógica de los topos en el hook `useMoles`, que limpia el intervalo al parar o al cambiar de nivel. Las posiciones se guardan en un `Set` inmutable: cada cambio crea uno nuevo para que React detecte la actualización.
+- **Estado**: `PlayerContext` comparte el jugador entre vistas; el resto del estado vive en `GamePage` (puntos, vidas, tiempo, dificultad) y la lógica de las figuras en el hook `useTargets`, que limpia el intervalo al parar o al cambiar de nivel. Las figuras se guardan en un `Map` inmutable (casilla → topo o bomba): cada cambio crea uno nuevo para que React detecte la actualización. El fin de partida se deriva del estado (`!lives || !timeLeft`) en lugar de guardarse aparte.
 - **Componentes de presentación**: `Board`, `Hole` y `DifficultySelector` no tienen estado propio; reciben todo por props y notifican mediante callbacks.
 - **Estilos**: Sass con tokens de diseño (`src/styles/_tokens.scss`), diseño _mobile-first_, modo oscuro automático (`prefers-color-scheme`) y respeto a `prefers-reduced-motion`.
 - **Accesibilidad**: elementos nativos (`<button>`, `<fieldset>` con radios), nombres accesibles en cada casilla, foco visible, objetivos táctiles de 48 px y marcador con `aria-live`.
@@ -103,7 +104,10 @@ Los tests buscan los elementos como lo haría un usuario (por rol y nombre acces
 
 ## Extras implementados
 
-- **Varios topos a la vez**: el número de topos simultáneos crece con la dificultad (1, 2 y 3). Cada topo puntúa una sola vez y desaparece al ser golpeado; en el siguiente intervalo todos cambian a casillas que estaban libres.
+- **Varios topos a la vez**: el número de figuras simultáneas crece con la dificultad (1, 2 y 3). Cada topo puntúa una sola vez y desaparece al ser golpeado; en el siguiente intervalo todos cambian a casillas que estaban libres.
+- **Bombas, vidas y tiempo**: partida de 60 segundos con 3 vidas; las bombas sustituyen a un topo y restan una vida. Al terminar se muestra la puntuación final y se puede volver a jugar.
+- **Aviso flotante** en la casilla golpeada: `+10` al acertar un topo o `-1 ❤️` al pulsar una bomba, con una animación que sube y se desvanece.
+- **Sonidos** al golpear un topo (pitido agudo) y una bomba (zumbido grave), generados con la Web Audio API (`src/game/sound.ts`): sin archivos de audio, funcionan offline y no pesan nada.
 - **Vibración** al acertar un topo. En Android se usa `navigator.vibrate`. Safari en iOS no expone ninguna API de vibración a las webs, así que como **solución experimental** se usa el tic háptico del interruptor nativo (`<input type="checkbox" switch>`, iOS 17.4+): un interruptor invisible que se pulsa desde el código (`src/game/vibrate.ts`). Es un comportamiento no estándar que Apple puede cambiar en cualquier versión; si deja de funcionar, el juego sigue igual, solo sin vibración.
 - **Cambio de jugador** desde la vista de juego.
 - **Integración continua** con GitHub Actions: en cada _push_ y _pull request_ se ejecutan lint, comprobación de tipos, tests y build.
@@ -120,9 +124,9 @@ src/
 │   ├── Hole/
 │   └── DifficultySelector/
 ├── pages/             Una vista por ruta: HomePage, GamePage
-├── hooks/             useMoles: lógica de los topos
+├── hooks/             useTargets: lógica de topos y bombas
 ├── context/           PlayerContext: jugador compartido y persistido
-├── game/              Reglas puras del juego: dificultad, sorteo de casillas
+├── game/              Reglas puras del juego: dificultad, duración, vidas, sorteo de casillas, bombas, vibración
 ├── styles/            Estilos globales en Sass: tokens, mixins, layout, formulario, botones
 ├── test-utils/        Configuración y utilidades de los tests
 ├── App.tsx            Tabla de rutas
