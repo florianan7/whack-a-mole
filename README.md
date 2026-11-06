@@ -104,7 +104,7 @@ Los tests buscan los elementos como lo haría un usuario (por rol y nombre acces
 ## Extras implementados
 
 - **Varios topos a la vez**: el número de topos simultáneos crece con la dificultad (1, 2 y 3). Cada topo puntúa una sola vez y desaparece al ser golpeado; en el siguiente intervalo todos cambian a casillas que estaban libres.
-- **Vibración** al acertar un topo (`navigator.vibrate`), en los dispositivos que la soportan.
+- **Vibración** al acertar un topo. En Android se usa `navigator.vibrate`. Safari en iOS no expone ninguna API de vibración a las webs, así que como **solución experimental** se usa el tic háptico del interruptor nativo (`<input type="checkbox" switch>`, iOS 17.4+): un interruptor invisible que se pulsa desde el código (`src/game/vibrate.ts`). Es un comportamiento no estándar que Apple puede cambiar en cualquier versión; si deja de funcionar, el juego sigue igual, solo sin vibración.
 - **Cambio de jugador** desde la vista de juego.
 - **Integración continua** con GitHub Actions: en cada _push_ y _pull request_ se ejecutan lint, comprobación de tipos, tests y build.
 - **Despliegue continuo** en Vercel: cada _push_ a `main` publica la aplicación y cada _pull request_ genera una URL de previsualización.

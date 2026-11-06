@@ -1,0 +1,5 @@
+@use '../../styles/mixins' as *;
+
+.haptic-switch {
+    @include visually-hidden;
+}

@@ -3,8 +3,10 @@ import {Navigate} from 'react-router-dom'
 import {usePlayer} from '../context/PlayerContext'
 import DifficultySelector from '../components/DifficultySelector'
 import Board from '../components/Board'
+import HapticSwitch from '../components/HapticSwitch'
 import {useMoles} from '../hooks/useMoles'
 import {DEFAULT_DIFFICULTY, DIFFICULTIES, type Difficulty} from '../game/difficulty'
+import {vibrate} from '../game/vibrate'
 
 const TOTAL_HOLES = 9
 const HIT_VIBRATION_MS = 50
@@ -27,7 +29,7 @@ function GamePage() {
     function handleWhack(index: number) {
         if (whack(index)) {
             setScore((previous) => previous + points)
-            navigator.vibrate?.(HIT_VIBRATION_MS)
+            vibrate(HIT_VIBRATION_MS)
         }
     }
 
@@ -75,6 +77,8 @@ function GamePage() {
             >
                 Cambiar jugador
             </button>
+
+            <HapticSwitch />
         </main>
     )
 }
