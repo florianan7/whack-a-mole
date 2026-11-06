@@ -1,8 +1,6 @@
 import {act, renderHook} from '@testing-library/react'
 import {describe, expect, it} from 'vitest'
-import {PlayerProvider, usePlayer} from './PlayerContext'
-
-const STORAGE_KEY = 'whack-a-mole:player'
+import {PlayerProvider, STORAGE_KEY, usePlayer} from './PlayerContext'
 
 describe('PlayerContext', () => {
     it('empieza sin nombre si no hay nada guardado', () => {

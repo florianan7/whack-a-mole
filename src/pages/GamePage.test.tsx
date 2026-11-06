@@ -1,20 +1,19 @@
 import {act, fireEvent, screen} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 import App from '../App'
+import {STORAGE_KEY} from '../context/PlayerContext'
 import {renderWithProviders} from '../test-utils/renderWithProviders'
 
 function renderGameAs(name: string) {
-    localStorage.setItem('whack-a-mole:player', name)
+    localStorage.setItem(STORAGE_KEY, name)
     return renderWithProviders(<App />, {route: '/game'})
 }
 
 describe('GamePage', () => {
     beforeEach(() => {
         vi.useFakeTimers()
-        vi.spyOn(Math, 'random').mockReturnValue(0) // the first mole always shows up in hole 1
+        vi.spyOn(Math, 'random').mockReturnValue(0)
     })
-
-    // With fake timers we use fireEvent (synchronous): userEvent waits on real timers and hangs
 
     it('muestra el nombre del jugador, los puntos y el botón Play', () => {
         renderGameAs('Ana')
@@ -35,22 +34,41 @@ describe('GamePage', () => {
     })
 
     it.each([
-        {level: 'Bajo', intervalMs: 1000, points: 10},
-        {level: 'Medio', intervalMs: 750, points: 20},
-        {level: 'Alto', intervalMs: 500, points: 30},
+        {level: 'Bajo', intervalMs: 1000, points: 10, moles: 1},
+        {level: 'Medio', intervalMs: 750, points: 20, moles: 2},
+        {level: 'Alto', intervalMs: 500, points: 30, moles: 3},
     ])(
-        'en nivel $level el topo sale cada $intervalMs ms y da $points puntos',
-        ({level, intervalMs, points}) => {
+        'en nivel $level salen $moles topo(s) cada $intervalMs ms y cada uno da $points puntos',
+        ({level, intervalMs, points, moles}) => {
             renderGameAs('Ana')
 
             fireEvent.click(screen.getByRole('radio', {name: level}))
             fireEvent.click(screen.getByRole('button', {name: 'Play'}))
             act(() => vi.advanceTimersByTime(intervalMs))
-            fireEvent.click(screen.getByRole('button', {name: /¡topo!/}))
+
+            const visibleMoles = screen.getAllByRole('button', {name: /¡topo!/})
+            expect(visibleMoles).toHaveLength(moles)
+
+            fireEvent.click(visibleMoles[0])
 
             expect(screen.getByText(`Puntos: ${points}`)).toBeInTheDocument()
         },
     )
+
+    it('cada topo de la pantalla puntúa una sola vez', () => {
+        renderGameAs('Ana')
+
+        fireEvent.click(screen.getByRole('radio', {name: 'Alto'}))
+        fireEvent.click(screen.getByRole('button', {name: 'Play'}))
+        act(() => vi.advanceTimersByTime(500))
+
+        const [first, second] = screen.getAllByRole('button', {name: /¡topo!/})
+        fireEvent.click(first)
+        fireEvent.click(first)
+        fireEvent.click(second)
+
+        expect(screen.getByText('Puntos: 60')).toBeInTheDocument()
+    })
 
     it('no suma puntos al pulsar una casilla vacía', () => {
         renderGameAs('Ana')
@@ -112,7 +130,7 @@ describe('GamePage', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Cambiar jugador'}))
 
         expect(screen.getByLabelText('Nombre')).toBeInTheDocument()
-        expect(localStorage.getItem('whack-a-mole:player')).toBeNull()
+        expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
     })
 
     it('no permite cambiar de jugador durante la partida', () => {

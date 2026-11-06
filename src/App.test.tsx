@@ -1,6 +1,7 @@
 import {screen} from '@testing-library/react'
 import {describe, expect, it} from 'vitest'
 import App from './App'
+import {STORAGE_KEY} from './context/PlayerContext'
 import {renderWithProviders} from './test-utils/renderWithProviders'
 
 describe('App (rutas)', () => {
@@ -20,7 +21,7 @@ describe('App (rutas)', () => {
     })
 
     it('entrar en /game con jugador guardado muestra el juego', () => {
-        localStorage.setItem('whack-a-mole:player', 'Ana')
+        localStorage.setItem(STORAGE_KEY, 'Ana')
         renderWithProviders(<App />, {route: '/game'})
         expect(screen.getByRole('heading', {name: 'Ana'})).toBeInTheDocument()
     })

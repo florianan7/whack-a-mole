@@ -15,7 +15,7 @@ export default defineConfig([
             tseslint.configs.recommended,
             reactHooks.configs.flat.recommended,
             reactRefresh.configs.vite,
-            // Must be last: turns off ESLint formatting rules that would conflict with Prettier
+            // Debe ir el último: desactiva las reglas de formato de ESLint que chocan con Prettier
             prettier,
         ],
         languageOptions: {
