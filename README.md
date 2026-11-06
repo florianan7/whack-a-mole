@@ -53,6 +53,8 @@ y abre en el móvil la URL que muestra la consola (`http://192.168.x.x:5173`).
 | `npm test`             | Ejecuta los tests unitarios una vez                                                          |
 | `npm run test:watch`   | Ejecuta los tests en modo vigilancia                                                         |
 | `npm run coverage`     | Tests con informe de cobertura                                                               |
+| `npm run test:e2e`     | Tests end-to-end con Playwright (hace el build y lo sirve él mismo)                          |
+| `npm run test:e2e:ui`  | Los tests end-to-end en la interfaz interactiva de Playwright                                |
 | `npm run lint`         | Análisis estático con ESLint                                                                 |
 | `npm run typecheck`    | Comprobación de tipos con TypeScript                                                         |
 | `npm run format`       | Formatea todo el código con Prettier                                                         |
@@ -84,6 +86,15 @@ Los tests unitarios usan [Vitest](https://vitest.dev/) y [Testing Library](https
 
 Los tests buscan los elementos como lo haría un usuario (por rol y nombre accesible), de modo que también verifican la accesibilidad.
 
+### Tests end-to-end
+
+Con [Playwright](https://playwright.dev/) (`e2e/`), contra la versión de producción y en dos perfiles: Chrome de escritorio y un móvil Android (Pixel 7). Recorren los flujos completos: redirecciones de rutas, validación del nombre, registro y partida con puntuación, persistencia del jugador al recargar, cambio de jugador, y **el requisito offline**: tras abrir la app una vez, se corta la red y se comprueba que sigue cargando y se puede jugar. La primera vez hay que descargar el navegador:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
 ## Decisiones de diseño
 
 - **Validación del nombre**: entre 2 y 15 caracteres tras eliminar espacios sobrantes; solo letras (de cualquier alfabeto, incluidas tildes y ñ), números y espacios. Un carácter no permitido se avisa al momento; la longitud se comprueba medio segundo después de dejar de escribir (_debounce_) y al enviar. Los errores se anuncian con `role="alert"` y se asocian al campo con `aria-describedby`.
@@ -110,7 +121,8 @@ Los tests buscan los elementos como lo haría un usuario (por rol y nombre acces
 - **Sonidos** al golpear un topo (pitido agudo) y una bomba (zumbido grave), generados con la Web Audio API (`src/game/sound.ts`): sin archivos de audio, funcionan offline y no pesan nada.
 - **Vibración** al acertar un topo. En Android se usa `navigator.vibrate`. Safari en iOS no expone ninguna API de vibración a las webs, así que como **solución experimental** se usa el tic háptico del interruptor nativo (`<input type="checkbox" switch>`, iOS 17.4+): un interruptor invisible que se pulsa desde el código (`src/game/vibrate.ts`). Es un comportamiento no estándar que Apple puede cambiar en cualquier versión; si deja de funcionar, el juego sigue igual, solo sin vibración.
 - **Cambio de jugador** desde la vista de juego.
-- **Integración continua** con GitHub Actions: en cada _push_ y _pull request_ se ejecutan lint, comprobación de tipos, tests y build.
+- **Tests end-to-end** con Playwright, en escritorio y móvil, incluida la comprobación del modo offline.
+- **Integración continua** con GitHub Actions: en cada _push_ y _pull request_ se ejecutan formato, lint, comprobación de tipos, tests unitarios, build y tests end-to-end (con el informe de Playwright como artefacto si fallan).
 - **Despliegue continuo** en Vercel: cada _push_ a `main` publica la aplicación y cada _pull request_ genera una URL de previsualización.
 - **Análisis estático** con ESLint (reglas de React Hooks y React Refresh) y TypeScript en modo estricto.
 - **Formateo automático** con Prettier (integrado con ESLint mediante `eslint-config-prettier`) y `.editorconfig` para que cualquier editor use el mismo estilo. El CI rechaza código sin formatear.
@@ -131,8 +143,9 @@ src/
 ├── test-utils/        Configuración y utilidades de los tests
 ├── App.tsx            Tabla de rutas
 └── main.tsx           Arranque de la aplicación
+e2e/                   Tests end-to-end (Playwright)
 ```
 
 ## Tecnologías
 
-React 19 · TypeScript · Vite · React Router · Sass · vite-plugin-pwa (Workbox) · Vitest · Testing Library · ESLint · GitHub Actions · Vercel
+React 19 · TypeScript · Vite · React Router · Sass · vite-plugin-pwa (Workbox) · Vitest · Testing Library · Playwright · ESLint · Prettier · GitHub Actions · Vercel
