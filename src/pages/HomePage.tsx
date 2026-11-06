@@ -28,16 +28,17 @@ function HomePage() {
     const [error, setError] = useState('')
     const {setName} = usePlayer()
     const navigate = useNavigate()
+    const trimmed = inputName.trim()
+    const isValid = !validateName(trimmed)
 
     /** Valida el nombre completo cuando el usuario lleva un momento sin escribir. */
     useEffect(() => {
-        const trimmed = inputName.trim()
         if (!trimmed) {
             return
         }
         const timeoutId = setTimeout(() => setError(validateName(trimmed)), VALIDATION_DELAY_MS)
         return () => clearTimeout(timeoutId)
-    }, [inputName])
+    }, [trimmed])
 
     /** Actualiza el nombre y avisa al momento si se escribe un carácter no permitido. */
     function handleChange(event: ChangeEvent<HTMLInputElement>) {
@@ -45,17 +46,9 @@ function HomePage() {
         setError(validateCharacters(event.target.value.trim()))
     }
 
-    /** Valida el nombre y, si es válido, lo guarda y va al juego. */
+    /** Guarda el nombre y va al juego. */
     function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
-
-        const trimmed = inputName.trim()
-        const validationError = validateName(trimmed)
-        if (validationError) {
-            setError(validationError)
-            return
-        }
-
         setName(trimmed)
         navigate('/game')
     }
@@ -82,7 +75,7 @@ function HomePage() {
                         {error}
                     </p>
                 )}
-                <button className="button" type="submit">
+                <button className="button" type="submit" disabled={!isValid}>
                     Jugar
                 </button>
             </form>

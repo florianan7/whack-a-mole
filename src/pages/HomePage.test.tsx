@@ -12,36 +12,33 @@ describe('HomePage', () => {
         expect(screen.getByRole('button', {name: 'Jugar'})).toBeInTheDocument()
     })
 
-    it('muestra un error si el nombre está vacío', async () => {
-        const user = userEvent.setup()
+    it('no deja jugar con el nombre vacío', () => {
         renderWithProviders(<App />)
 
-        await user.click(screen.getByRole('button', {name: 'Jugar'}))
-
-        expect(screen.getByRole('alert')).toHaveTextContent('entre 2 y 15 caracteres')
-        expect(screen.getByLabelText('Nombre')).toHaveAttribute('aria-invalid', 'true')
+        expect(screen.getByRole('button', {name: 'Jugar'})).toBeDisabled()
     })
 
-    it('no acepta un nombre de solo espacios', async () => {
+    it('no deja jugar con un nombre de solo espacios', async () => {
         const user = userEvent.setup()
         renderWithProviders(<App />)
 
         await user.type(screen.getByLabelText('Nombre'), '     ')
-        await user.click(screen.getByRole('button', {name: 'Jugar'}))
 
-        expect(screen.getByRole('alert')).toBeInTheDocument()
+        expect(screen.getByRole('button', {name: 'Jugar'})).toBeDisabled()
     })
 
-    it('avisa al momento si se escribe un carácter no permitido', async () => {
+    it('avisa al momento si se escribe un carácter no permitido y no deja jugar', async () => {
         const user = userEvent.setup()
         renderWithProviders(<App />)
 
         await user.type(screen.getByLabelText('Nombre'), 'Ana!')
 
         expect(screen.getByRole('alert')).toHaveTextContent('solo puede contener letras')
+        expect(screen.getByLabelText('Nombre')).toHaveAttribute('aria-invalid', 'true')
+        expect(screen.getByRole('button', {name: 'Jugar'})).toBeDisabled()
     })
 
-    it('avisa de la longitud al dejar de escribir, sin enviar', () => {
+    it('avisa de la longitud al dejar de escribir', () => {
         vi.useFakeTimers()
         renderWithProviders(<App />)
 
@@ -53,24 +50,26 @@ describe('HomePage', () => {
         expect(screen.getByRole('alert')).toHaveTextContent('entre 2 y 15 caracteres')
     })
 
-    it('muestra un error si el nombre tiene símbolos', async () => {
-        const user = userEvent.setup()
+    it('borra el error al volver a escribir', () => {
+        vi.useFakeTimers()
         renderWithProviders(<App />)
 
-        await user.type(screen.getByLabelText('Nombre'), 'Ana!')
-        await user.click(screen.getByRole('button', {name: 'Jugar'}))
+        fireEvent.change(screen.getByLabelText('Nombre'), {target: {value: 'A'}})
+        act(() => vi.advanceTimersByTime(500))
+        expect(screen.getByRole('alert')).toBeInTheDocument()
 
-        expect(screen.getByRole('alert')).toHaveTextContent('solo puede contener letras')
-    })
-
-    it('borra el error al volver a escribir', async () => {
-        const user = userEvent.setup()
-        renderWithProviders(<App />)
-
-        await user.click(screen.getByRole('button', {name: 'Jugar'}))
-        await user.type(screen.getByLabelText('Nombre'), 'A')
+        fireEvent.change(screen.getByLabelText('Nombre'), {target: {value: 'An'}})
 
         expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('habilita el botón con un nombre válido', async () => {
+        const user = userEvent.setup()
+        renderWithProviders(<App />)
+
+        await user.type(screen.getByLabelText('Nombre'), 'Ana')
+
+        expect(screen.getByRole('button', {name: 'Jugar'})).toBeEnabled()
     })
 
     it('con un nombre válido (con tildes) va a la vista de juego', async () => {
