@@ -1,7 +1,5 @@
 # 🐹 Toca al topo
 
-[![CI](https://github.com/florianan7/whack-a-mole/actions/workflows/ci.yml/badge.svg)](https://github.com/florianan7/whack-a-mole/actions/workflows/ci.yml)
-
 Aplicación web progresiva (PWA) del clásico juego "Toca al topo", desarrollada con React, TypeScript y Vite. Funciona sin conexión y se puede instalar en el móvil.
 
 **Demo:** https://whack-a-mole-sigma-one.vercel.app
@@ -88,7 +86,7 @@ Los tests buscan los elementos como lo haría un usuario (por rol y nombre acces
 
 ## Decisiones de diseño
 
-- **Validación del nombre**: entre 2 y 15 caracteres tras eliminar espacios sobrantes; solo letras (de cualquier alfabeto, incluidas tildes y ñ), números y espacios. Los errores se anuncian con `role="alert"` y se asocian al campo con `aria-describedby`.
+- **Validación del nombre**: entre 2 y 15 caracteres tras eliminar espacios sobrantes; solo letras (de cualquier alfabeto, incluidas tildes y ñ), números y espacios. Un carácter no permitido se avisa al momento; la longitud se comprueba medio segundo después de dejar de escribir (_debounce_) y al enviar. Los errores se anuncian con `role="alert"` y se asocian al campo con `aria-describedby`.
 - **Duración de la partida**: el juego continúa hasta que el jugador pulsa **Parar**. Cada partida empieza con 0 puntos.
 - **Los topos nunca repiten casilla**: `getRandomHoles` elige las casillas nuevas entre las que estaban libres, sacando una al azar y retirándola de la lista antes de sacar la siguiente, sin bucles de reintento. La función aleatoria se inyecta para que los tests sean deterministas.
 - **Persistencia**: el nombre del jugador se guarda en `localStorage`, de modo que sobrevive a recargas y a abrir la app sin conexión. Si el almacenamiento no está disponible (modo privado), la app sigue funcionando en memoria.
