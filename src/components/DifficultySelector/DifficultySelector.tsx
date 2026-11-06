@@ -8,11 +8,7 @@ interface DifficultySelectorProps {
     disabled?: boolean
 }
 
-/**
- * Controlled radio group for the difficulty level. The parent owns the value;
- * this component only renders it and reports changes.
- * Levels and labels come from DIFFICULTIES, so adding a level needs no change here.
- */
+/** Grupo de radios para elegir el nivel de dificultad. */
 function DifficultySelector({value, onChange, disabled = false}: DifficultySelectorProps) {
     const name = useId()
 

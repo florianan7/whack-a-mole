@@ -4,11 +4,7 @@ interface HoleProps {
     onWhack: (index: number) => void
 }
 
-/**
- * A single hole. A real <button> so it works with keyboard and screen readers.
- * The accessible name says whether the mole is there; the emoji is hidden from
- * assistive tech because it would be read as "hamster".
- */
+/** Una casilla del tablero, con o sin topo. */
 function Hole({index, hasMole, onWhack}: HoleProps) {
     const label = `Casilla ${index + 1}${hasMole ? ': ¡topo!' : ''}`
     return (

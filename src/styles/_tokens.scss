@@ -1,5 +1,4 @@
-// Color palettes: one map per theme.
-// They become CSS custom properties (--color-*) so the theme can switch at runtime.
+// Paletas de color, una por tema. Se exponen como variables CSS --color-*.
 $light: (
     bg: #e8f5e1,
     surface: #ffffff,
@@ -28,7 +27,6 @@ $dark: (
     hole-inner: #23150a,
 );
 
-// Fixed sizes: they don't change with the theme, so plain Sass variables are enough
 $radius: 12px;
 $shadow: 0 2px 8px rgb(0 0 0 / 0.08);
 $page-gutter: 16px;

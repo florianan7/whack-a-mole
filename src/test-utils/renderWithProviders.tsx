@@ -7,11 +7,7 @@ interface Options {
     route?: string
 }
 
-/**
- * Renders a component with the same wrappers as main.tsx (router + player context),
- * starting at the given route. MemoryRouter keeps the URL in memory, so tests
- * don't touch the real browser history.
- */
+/** Renderiza un componente con el router y el contexto del jugador, empezando en `route`. */
 export function renderWithProviders(ui: ReactElement, {route = '/'}: Options = {}) {
     return render(
         <MemoryRouter initialEntries={[route]}>
