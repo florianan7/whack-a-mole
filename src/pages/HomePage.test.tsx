@@ -1,6 +1,6 @@
-import {screen} from '@testing-library/react'
+import {act, fireEvent, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import {describe, expect, it} from 'vitest'
+import {describe, expect, it, vi} from 'vitest'
 import App from '../App'
 import {renderWithProviders} from '../test-utils/renderWithProviders'
 
@@ -30,6 +30,27 @@ describe('HomePage', () => {
         await user.click(screen.getByRole('button', {name: 'Jugar'}))
 
         expect(screen.getByRole('alert')).toBeInTheDocument()
+    })
+
+    it('avisa al momento si se escribe un carácter no permitido', async () => {
+        const user = userEvent.setup()
+        renderWithProviders(<App />)
+
+        await user.type(screen.getByLabelText('Nombre'), 'Ana!')
+
+        expect(screen.getByRole('alert')).toHaveTextContent('solo puede contener letras')
+    })
+
+    it('avisa de la longitud al dejar de escribir, sin enviar', () => {
+        vi.useFakeTimers()
+        renderWithProviders(<App />)
+
+        fireEvent.change(screen.getByLabelText('Nombre'), {target: {value: 'A'}})
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+
+        act(() => vi.advanceTimersByTime(500))
+
+        expect(screen.getByRole('alert')).toHaveTextContent('entre 2 y 15 caracteres')
     })
 
     it('muestra un error si el nombre tiene símbolos', async () => {
